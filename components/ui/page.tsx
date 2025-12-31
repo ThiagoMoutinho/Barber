@@ -3,7 +3,11 @@ export const PageContainer = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const PageSectionTitle = ({ children }: { children: React.ReactNode }) => {
-  return <h3 className="text-xs font-bold uppercase">{children}</h3>;
+  return (
+    <div className="space-y-3">
+      <h3 className="text-xs font-bold uppercase">{children}</h3>
+    </div>
+  );
 };
 
 export const PageSectionContent = ({
