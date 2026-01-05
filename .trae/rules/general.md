@@ -19,6 +19,7 @@ Tecnologias utilizadas:
 - PostgreSQL
 - Docker
 - shadcn-ui
+- Better Auth para autenticação e autorização.
 
 ## REGRAS
 - SEMPRE use shadcn-ui para componentes de interface.

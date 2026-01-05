@@ -1,15 +1,17 @@
-import jwt from "jsonwebtoken";
+import { betterAuth } from "better-auth";
+import { prismaAdapter } from "better-auth/adapters/prisma";
+import { prisma } from "./prisma";
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
-export const generateToken = (payload: any) => {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: "1d" });
-};
 
-export const verifyToken = (token: string) => {
-  try {
-    return jwt.verify(token, JWT_SECRET);
-  } catch (error) {
-    return null;
-  }
-};
+export const auth = betterAuth({
+    database: prismaAdapter(prisma, {
+        provider: "postgresql", // or "mysql", "postgresql", ...etc
+    }),
+    socialProviders: { 
+    google: { 
+      clientId: process.env.GOOGLE_CLIENT_ID as string, 
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string, 
+    }, 
+  }, 
+}); 

@@ -2,7 +2,7 @@ import Image from "next/image";
 import { Button } from "./ui/button";
 import { MenuIcon } from "lucide-react";
 import { Sheet, SheetTrigger } from "./ui/sheet";
-import SideMenu from "./side-menu";
+import SideMenu from "./menu-sheet";
 import Link from "next/link";
 
 export const Header = () => {
