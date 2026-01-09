@@ -14,6 +14,7 @@ model Barbershop {
   imageUrl    String
   phones      String[]
   services    BarbershopService[]
+  bookings    Booking[]
 }
 
 model BarbershopService {
@@ -43,22 +44,24 @@ model User {
 }
 
 model Booking {
-  id        String            @id @default(uuid())
-  userId    String
-  serviceId String
-  date      DateTime
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
-  service   BarbershopService @relation(fields: [serviceId], references: [id])
-  user      User              @relation(fields: [userId], references: [id])
+  id           String            @id @default(uuid())
+  userId       String
+  serviceId    String
+  barbershopId String
+  date         DateTime          @db.Timestamptz()
+  createdAt    DateTime          @default(now()) @db.Timestamptz()
+  updatedAt    DateTime          @updatedAt @db.Timestamptz()
+  service      BarbershopService @relation(fields: [serviceId], references: [id])
+  user         User              @relation(fields: [userId], references: [id])
+  barbershop   Barbershop        @relation(fields: [barbershopId], references: [id])
 }
 
 model Session {
   id        String   @id
-  expiresAt DateTime
+  expiresAt DateTime @db.Timestamptz()
   token     String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz()
+  updatedAt DateTime @updatedAt @db.Timestamptz()
   ipAddress String?
   userAgent String?
   userId    String
@@ -80,8 +83,8 @@ model Account {
   refreshTokenExpiresAt DateTime?
   scope                 String?
   password              String?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  createdAt             DateTime  @default(now()) @db.Timestamptz()
+  updatedAt             DateTime  @updatedAt @db.Timestamptz()
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
@@ -92,9 +95,9 @@ model Verification {
   id         String   @id
   identifier String
   value      String
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  expiresAt  DateTime @db.Timestamptz()
+  createdAt  DateTime @default(now()) @db.Timestamptz()
+  updatedAt  DateTime @updatedAt @db.Timestamptz()
 
   @@index([identifier])
   @@map("verification")

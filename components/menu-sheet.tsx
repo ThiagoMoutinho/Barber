@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "./ui/button";
-import { SheetContent, SheetHeader, SheetTitle } from "./ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "./ui/sheet";
 import { CalendarIcon, HomeIcon, LogInIcon, LogOutIcon } from "lucide-react";
 import Link from "next/link";
 import { quickSearchOptions } from "./quick-search";

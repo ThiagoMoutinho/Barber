@@ -1,9 +1,16 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const connectionString = `${process.env.DATABASE_URL}`;
-const pool = new pg.Pool({ connectionString });
+const pool = new pg.Pool({
+  connectionString,
+  connectionTimeoutMillis: 30000,
+  idleTimeoutMillis: 30000,
+});
 const adapter = new PrismaPg(pool);
 
 const prisma = new PrismaClient({ adapter });
@@ -121,24 +128,18 @@ async function seedDatabase() {
           phones: ["(11) 99999-9999", "(11) 99999-9999"],
           description:
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec ac augue ullamcorper, pharetra orci mollis, auctor tellus. Phasellus pharetra erat ac libero efficitur tempus. Donec pretium convallis iaculis. Etiam eu felis sollicitudin, cursus mi vitae, iaculis magna. Nam non erat neque. In hac habitasse platea dictumst. Pellentesque molestie accumsan tellus id laoreet.",
+          services: {
+            createMany: {
+              data: services.map((service) => ({
+                name: service.name,
+                description: service.description,
+                priceInCents: service.price * 100,
+                imageUrl: service.imageUrl,
+              })),
+            },
+          },
         },
       });
-
-      for (const service of services) {
-        await prisma.barbershopService.create({
-          data: {
-            name: service.name,
-            description: service.description,
-            priceInCents: service.price * 100,
-            barbershop: {
-              connect: {
-                id: barbershop.id,
-              },
-            },
-            imageUrl: service.imageUrl,
-          },
-        });
-      }
 
       barbershops.push(barbershop);
     }

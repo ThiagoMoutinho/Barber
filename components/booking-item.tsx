@@ -38,7 +38,7 @@ const BookingItem = ({
         <div className="flex h-full w-[106px] flex-col items-center justify-center border-l py-3">
           <p className="text-1xl capitalize">{month}</p>
           <p className="text-2xl">{day}</p>
-          <p className="text-sm font-medium">09:45</p>
+          <p className="text-sm font-medium">{date}</p>
         </div>
       </CardContent>
     </Card>
