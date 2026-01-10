@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Button } from "./button";
 import { formatCurrency } from "@/helpers/price";
 import { Sheet, SheetTrigger } from "./sheet";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
@@ -14,34 +14,14 @@ import { ptBR } from "date-fns/locale";
 import { createBooking } from "@/actions/create-booking";
 import { useAction } from "next-safe-action/hooks";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent } from "./card";
+import { useGetDateAvailableTimeSlots } from "@/hooks/data/use-get-date-available-time-slot.tsx";
 
 interface ServiceItemProps {
   service: BarbershopService;
-  barbershop: Pick<Barbershop, "name" | "id">;
+  barbershop: Barbershop;
 }
-
-const TIME_LIST = [
-  "09:00",
-  "09:30",
-  "10:00",
-  "10:30",
-  "11:00",
-  "11:30",
-  "12:00",
-  "12:30",
-  "13:00",
-  "13:30",
-  "14:00",
-  "14:30",
-  "15:00",
-  "15:30",
-  "16:00",
-  "16:30",
-  "17:00",
-];
 
 const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
@@ -61,6 +41,11 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
       },
     },
   );
+
+  const { data: availableTimeSlots, isPending: isLoadingAvailableTimeSlots} = useGetDateAvailableTimeSlots({
+    barbershopId: barbershop.id,
+    date: selectedDate!,
+  });
 
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
@@ -145,7 +130,7 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
               {/* Exibir horários apenas se a data estiver selecionada */}
               {selectedDate && (
                 <div className="border-secondary flex gap-3 overflow-x-auto border-y border-solid px-5 py-6 [&::-webkit-scrollbar]:hidden">
-                  {TIME_LIST.map((time) => (
+                  {availableTimeSlots?.data?.map((time) => (
                     <Button
                       key={time}
                       variant={selectedTime === time ? "default" : "outline"}

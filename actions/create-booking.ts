@@ -46,6 +46,7 @@ export const createBooking = actionClient
         date,
       },
     });
+    
 
     return booking;
   });
