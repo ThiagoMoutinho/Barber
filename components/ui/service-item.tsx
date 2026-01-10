@@ -122,6 +122,7 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
                   mode="single"
                   selected={selectedDate}
                   onSelect={handleDateSelect}
+                  disabled={{before: new Date()}}
                   locale={ptBR}
                   className="w-full"
                 />

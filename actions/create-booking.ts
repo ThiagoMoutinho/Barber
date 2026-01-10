@@ -5,6 +5,7 @@ import { actionClient } from "@/lib/safe-action";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { isPast } from "date-fns";
 
 const createBookingSchema = z.object({
   serviceId: z.string(),
@@ -15,6 +16,9 @@ const createBookingSchema = z.object({
 export const createBooking = actionClient
   .schema(createBookingSchema)
   .action(async ({ parsedInput: { serviceId, barbershopId, date } }) => {
+    if(isPast(date)) {
+      throw new Error("Não é possível agendar para uma data passada.");
+    }
     const session = await auth.api.getSession({
       headers: await headers(),
     });
