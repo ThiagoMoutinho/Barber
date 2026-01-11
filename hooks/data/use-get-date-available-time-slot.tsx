@@ -17,6 +17,7 @@ export const useGetDateAvailableTimeSlots = ({
       getDateAvailableTimeSlots({
         barbershopId,
         date: date!,
+
       }),
       enabled: Boolean(date),
   });

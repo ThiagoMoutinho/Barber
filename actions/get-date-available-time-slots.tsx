@@ -1,16 +1,14 @@
 "use server"
 
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { actionClient } from "@/lib/safe-action";
-import { returnValidationErrors } from "next-safe-action";
 import { format } from "date-fns";
 import { z } from "zod";
-import { headers } from "next/headers.js";
 
 const inputSchema = z.object({
   barbershopId: z.string(),
   date: z.date(),
+  hour: z.string().optional(),
 });
 
 const TIME_SLOTS = [
@@ -36,14 +34,6 @@ const TIME_SLOTS = [
 export const getDateAvailableTimeSlots = actionClient
   .schema(inputSchema)
   .action(async ({ parsedInput: { barbershopId, date } }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-    if (!session?.user) {
-      returnValidationErrors(inputSchema, {
-        _errors: ["Não autorizado. Faça login para continuar."],
-      });
-    }
     const bookings = await prisma.booking.findMany({
       where: {
         barbershopId,

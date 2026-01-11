@@ -11,8 +11,10 @@ import { Avatar, AvatarFallback } from "./ui/avatar";
 import Image from "next/image";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const SideMenu = () => {
+  const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
   const [isLoginLoading, setIsLoginLoading] = useState(false);
 
@@ -34,8 +36,8 @@ const SideMenu = () => {
   const handleLogout = async () => {
     await authClient.signOut();
     toast.success("Deslogado com sucesso!");
+    router.push("/");
   };
-
   return (
     <SheetContent className="overflow-y-auto p-0">
       <SheetHeader className="border-secondary border-b border-solid p-5 text-left">
@@ -99,12 +101,14 @@ const SideMenu = () => {
           </Link>
         </Button>
 
-        <Button variant="ghost" className="justify-start gap-3 px-0" asChild>
-          <Link href="/bookings">
-            <CalendarIcon size={18} />
-            Agendamentos
-          </Link>
-        </Button>
+        {session && (
+          <Button variant="ghost" className="justify-start gap-3 px-0" asChild>
+            <Link href="/bookings">
+              <CalendarIcon size={18} />
+              Agendamentos
+            </Link>
+          </Button>
+        )}
       </div>
 
       <div className="border-secondary flex flex-col gap-3 border-t border-solid px-5 py-6">

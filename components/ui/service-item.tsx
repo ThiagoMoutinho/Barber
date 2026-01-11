@@ -9,13 +9,14 @@ import { Sheet, SheetTrigger } from "./sheet";
 import { useState } from "react";
 import { SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
+import { format, isToday } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { createBooking } from "@/actions/create-booking";
 import { useAction } from "next-safe-action/hooks";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent } from "./card";
+import dayjs from "dayjs";
 import { useGetDateAvailableTimeSlots } from "@/hooks/data/use-get-date-available-time-slot.tsx";
 
 interface ServiceItemProps {
@@ -42,10 +43,11 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
     },
   );
 
-  const { data: availableTimeSlots, isPending: isLoadingAvailableTimeSlots} = useGetDateAvailableTimeSlots({
-    barbershopId: barbershop.id,
-    date: selectedDate!,
-  });
+  const { data: availableTimeSlots, isPending: isLoadingAvailableTimeSlots } =
+    useGetDateAvailableTimeSlots({
+      barbershopId: barbershop.id,
+      date: selectedDate!,
+    });
 
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
@@ -68,7 +70,7 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
     date.setHours(hours, minutes, 0, 0);
 
     const result = await executeCreateBooking({
-      date,
+      date: date.toISOString(),
       serviceId: service.id,
       barbershopId: barbershop.id,
     });
@@ -76,7 +78,7 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
       toast.error(result.validationErrors._errors?.[0]);
     }
     if (result?.serverError) {
-      return toast.error(result.serverError);
+      return toast.error("Erro ao realizar reserva. Faça login e tente novamente.");
     }
     setSheetIsOpen(false);
     setSelectedDate(undefined);
@@ -122,7 +124,7 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
                   mode="single"
                   selected={selectedDate}
                   onSelect={handleDateSelect}
-                  disabled={{before: new Date()}}
+                  disabled={{ before: new Date() }}
                   locale={ptBR}
                   className="w-full"
                 />
@@ -131,16 +133,25 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
               {/* Exibir horários apenas se a data estiver selecionada */}
               {selectedDate && (
                 <div className="border-secondary flex gap-3 overflow-x-auto border-y border-solid px-5 py-6 [&::-webkit-scrollbar]:hidden">
-                  {availableTimeSlots?.data?.map((time) => (
-                    <Button
-                      key={time}
-                      variant={selectedTime === time ? "default" : "outline"}
-                      className="rounded-full"
-                      onClick={() => handleTimeSelect(time)}
-                    >
-                      {time}
-                    </Button>
-                  ))}
+                  {availableTimeSlots?.data
+                    ?.filter((time) => {
+                      if (!isToday(selectedDate)) return true;
+                      const [hour, minutes] = time.split(":").map(Number);
+                      return dayjs()
+                        .set("hour", hour)
+                        .set("minute", minutes)
+                        .isAfter(dayjs());
+                    })
+                    .map((time) => (
+                      <Button
+                        key={time}
+                        variant={selectedTime === time ? "default" : "outline"}
+                        className="rounded-full"
+                        onClick={() => handleTimeSelect(time)}
+                      >
+                        {time}
+                      </Button>
+                    ))}
                 </div>
               )}
 

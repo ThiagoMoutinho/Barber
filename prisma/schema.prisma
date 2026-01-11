@@ -51,6 +51,7 @@ model Booking {
   date         DateTime          @db.Timestamptz()
   createdAt    DateTime          @default(now()) @db.Timestamptz()
   updatedAt    DateTime          @updatedAt @db.Timestamptz()
+  cancelledAt  DateTime?         @db.Timestamptz()
   service      BarbershopService @relation(fields: [serviceId], references: [id])
   user         User              @relation(fields: [userId], references: [id])
   barbershop   Barbershop        @relation(fields: [barbershopId], references: [id])

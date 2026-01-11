@@ -1,56 +1,55 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { actionClient } from "@/lib/safe-action";
 import { z } from "zod";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 import { isPast } from "date-fns";
+import { protectionActionClient } from "@/lib/action-client";
 
 const createBookingSchema = z.object({
   serviceId: z.string(),
   barbershopId: z.string(),
-  date: z.date(),
+  date: z.string(),
 });
 
-export const createBooking = actionClient
+export const createBooking = protectionActionClient
   .schema(createBookingSchema)
-  .action(async ({ parsedInput: { serviceId, barbershopId, date } }) => {
-    if(isPast(date)) {
-      throw new Error("Não é possível agendar para uma data passada.");
-    }
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-    // usuário autenticado?
-    if (!session?.user) {
-      throw new Error("Usuário não autenticado. Por favor, faça login.");
-    }
+  .action(
+    async ({
+      parsedInput: { serviceId, barbershopId, date },
+      ctx: { user },
+    }) => {
+      const bookingDate = new Date(date);
 
-    // Zerar segundos e milissegundos para garantir comparação exata
-    date.setSeconds(0);
-    date.setMilliseconds(0);
+      if (isPast(bookingDate)) {
+        throw new Error("Não é possível agendar para uma data passada.");
+      }
 
-    // já tem agendamento para esse horário?
-    const existingBooking = await prisma.booking.findFirst({
-      where: {
-        barbershopId,
-        date,
-      },
-    });
-    if (existingBooking) {
-      throw new Error("Data e hora selecionada já está agendada. Tente outro horário.");
-    }
+      // Zerar segundos e milissegundos para garantir comparação exata
+      bookingDate.setSeconds(0);
+      bookingDate.setMilliseconds(0);
 
-    const booking = await prisma.booking.create({
-      data: {
-        serviceId,
-        userId: session.user.id,
-        barbershopId,
-        date,
-      },
-    });
-    
+      // já tem agendamento para esse horário?
+      const existingBooking = await prisma.booking.findFirst({
+        where: {
+          barbershopId,
+          date: bookingDate,
+        },
+      });
+      if (existingBooking) {
+        throw new Error(
+          "Data e hora selecionada já está agendada. Tente outro horário.",
+        );
+      }
 
-    return booking;
-  });
+      const booking = await prisma.booking.create({
+        data: {
+          serviceId,
+          userId: user.id,
+          barbershopId,
+          date: bookingDate,
+        },
+      });
+
+      return booking;
+    },
+  );

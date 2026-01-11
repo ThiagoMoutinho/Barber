@@ -13,10 +13,21 @@ import BookingItem from "@/components/booking-item";
 import QuickSearch from "@/components/quick-search";
 import Search from "@/components/search";
 
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { getBookingsByUserId } from "@/data/bookings";
+
 export default async function Home() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
   const barbershops = await getBarberShops();
   const popularBarbershops = await getPopularBarberShops();
-  
+  const bookings = session?.user
+    ? await getBookingsByUserId(session.user.id)
+    : [];
+
   return (
     <div>
       <Header />
@@ -28,16 +39,17 @@ export default async function Home() {
           alt="Agende nos melhores com Aparatus"
           sizes="100vw"
           className="h-auto w-full"
-        /> 
-        <PageSectionContent>
-          <PageSectionTitle>Agendamentos</PageSectionTitle>
-          <BookingItem
-            name="Thiago"
-            date="2023-12-12"
-            month="dezembro"
-            day="12"
-          />
-        </PageSectionContent>
+        />
+        {bookings.length > 0 && (
+          <PageSectionContent>
+            <PageSectionTitle>Agendamentos</PageSectionTitle>
+            <PageSectionScroller>
+              {bookings.map((booking) => (
+                <BookingItem key={booking.id} booking={booking} />
+              ))}
+            </PageSectionScroller>
+          </PageSectionContent>
+        )}
         <PageSectionContent>
           <PageSectionTitle>Nossas barbershops</PageSectionTitle>
           <PageSectionScroller>
@@ -55,7 +67,6 @@ export default async function Home() {
           </PageSectionScroller>
         </PageSectionContent>
       </PageContainer>
-      
     </div>
   );
 }
