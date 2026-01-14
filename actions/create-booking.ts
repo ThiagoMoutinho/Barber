@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { isPast } from "date-fns";
 import { protectionActionClient } from "@/lib/action-client";
+import { revalidatePath } from "next/cache";
 
 const createBookingSchema = z.object({
   serviceId: z.string(),
@@ -49,6 +50,9 @@ export const createBooking = protectionActionClient
           date: bookingDate,
         },
       });
+
+      revalidatePath("/");
+      revalidatePath("/bookings");
 
       return booking;
     },

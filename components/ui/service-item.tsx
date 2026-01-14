@@ -18,6 +18,7 @@ import { Loader2 } from "lucide-react";
 import { Card, CardContent } from "./card";
 import dayjs from "dayjs";
 import { useGetDateAvailableTimeSlots } from "@/hooks/data/use-get-date-available-time-slot.tsx";
+import BookingSummary from "@/components/booking-summary";
 
 interface ServiceItemProps {
   service: BarbershopService;
@@ -78,7 +79,9 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
       toast.error(result.validationErrors._errors?.[0]);
     }
     if (result?.serverError) {
-      return toast.error("Erro ao realizar reserva. Faça login e tente novamente.");
+      return toast.error(
+        "Erro ao realizar reserva. Faça login e tente novamente.",
+      );
     }
     setSheetIsOpen(false);
     setSelectedDate(undefined);
@@ -158,39 +161,18 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
               {/* Card de Resumo */}
               {selectedDate && selectedTime && (
                 <div className="p-5">
-                  <Card>
-                    <CardContent className="flex flex-col gap-3 p-3">
-                      <div className="flex items-center justify-between">
-                        <h2 className="font-bold">{service.name}</h2>
-                        <p className="text-sm font-bold">
-                          {formatCurrency(service.priceInCents / 100)}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-muted-foreground text-sm">Data</h3>
-                        <p className="text-sm">
-                          {format(selectedDate, "dd 'de' MMMM", {
-                            locale: ptBR,
-                          })}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-muted-foreground text-sm">
-                          Horário
-                        </h3>
-                        <p className="text-sm">{selectedTime}</p>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-muted-foreground text-sm">
-                          Barbearia
-                        </h3>
-                        <p className="text-sm">{barbershop.name}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <BookingSummary
+                    barbershop={barbershop}
+                    service={service}
+                    date={(() => {
+                      const splitTime = selectedTime.split(":");
+                      const hours = parseInt(splitTime[0]);
+                      const minutes = parseInt(splitTime[1]);
+                      const date = new Date(selectedDate);
+                      date.setHours(hours, minutes, 0, 0);
+                      return date;
+                    })()}
+                  />
                 </div>
               )}
 

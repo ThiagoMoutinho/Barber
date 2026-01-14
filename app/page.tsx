@@ -16,6 +16,7 @@ import Search from "@/components/search";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { getBookingsByUserId } from "@/data/bookings";
+import { getBookingStatus } from "@/lib/get-booking-status";
 
 export default async function Home() {
   const session = await auth.api.getSession({
@@ -27,6 +28,15 @@ export default async function Home() {
   const bookings = session?.user
     ? await getBookingsByUserId(session.user.id)
     : [];
+
+  const sortedBookings = [...bookings].sort((a, b) => {
+    const statusA = getBookingStatus(new Date(a.date), a.cancelledAt);
+    const statusB = getBookingStatus(new Date(b.date), b.cancelledAt);
+
+    if (statusA === "CONFIRMED" && statusB !== "CONFIRMED") return -1;
+    if (statusA !== "CONFIRMED" && statusB === "CONFIRMED") return 1;
+    return 0;
+  });
 
   return (
     <div>
@@ -40,11 +50,11 @@ export default async function Home() {
           sizes="100vw"
           className="h-auto w-full"
         />
-        {bookings.length > 0 && (
+        {sortedBookings.length > 0 && (
           <PageSectionContent>
             <PageSectionTitle>Agendamentos</PageSectionTitle>
             <PageSectionScroller>
-              {bookings.map((booking) => (
+              {sortedBookings.map((booking) => (
                 <BookingItem key={booking.id} booking={booking} />
               ))}
             </PageSectionScroller>

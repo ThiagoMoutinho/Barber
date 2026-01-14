@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { actionClient } from "@/lib/safe-action";
-import { format } from "date-fns";
+import { endOfDay, format, startOfDay } from "date-fns";
 import { z } from "zod";
 
 const inputSchema = z.object({
@@ -37,15 +37,19 @@ export const getDateAvailableTimeSlots = actionClient
     const bookings = await prisma.booking.findMany({
       where: {
         barbershopId,
-        ...date,
+        date: {
+          gte: startOfDay(date),
+          lte: endOfDay(date),
+        },
+        cancelledAt: null,
       },
     });
 
-    const acuupiedSlots = bookings.map(
-        (booking) => format(booking.date, "HH:mm"),
+    const occupiedSlots = bookings.map((booking) =>
+      format(booking.date, "HH:mm"),
     );
-    const availbleTimeSlots = TIME_SLOTS.filter(
-        (slot) => !acuupiedSlots.includes(slot),
-    )
-    return availbleTimeSlots;
+    const availableTimeSlots = TIME_SLOTS.filter(
+      (slot) => !occupiedSlots.includes(slot),
+    );
+    return availableTimeSlots;
   });
